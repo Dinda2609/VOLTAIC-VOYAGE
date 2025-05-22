@@ -1,0 +1,1778 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOLTAIC VOYAGE: Petualangan Sel Galvani</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+        }
+        header {
+            text-align: center;
+            color: #1e88e5;
+            margin-bottom: 25px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 32px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        .subtitle {
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        h2 {
+            font-size: 18px;
+            color: #0d47a1;
+            border-bottom: 2px solid #bbdefb;
+            padding-bottom: 5px;
+            margin-top: 25px;
+        }
+        
+        /* Level Selection */
+        .level-selection {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .level-btn {
+            padding: 10px 20px;
+            border: 2px solid #1e88e5;
+            border-radius: 25px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        .level-btn:hover, .level-btn.active {
+            background: #1e88e5;
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        /* Game Area */
+        .game-area {
+            display: flex;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        .components-bank {
+            flex: 1;
+            min-height: 400px;
+            border: 3px dashed #90caf9;
+            border-radius: 12px;
+            padding: 15px;
+            background: linear-gradient(145deg, #e3f2fd, #f3e5f5);
+            position: relative;
+        }
+        .assembly-area {
+            flex: 2;
+            min-height: 400px;
+            border: 3px solid #90caf9;
+            border-radius: 12px;
+            padding: 15px;
+            background: linear-gradient(145deg, #e8f5e8, #fff3e0);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Enhanced Info Panel */
+        .info-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            color: white;
+        }
+        .info-item {
+            text-align: center;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+        .info-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .help-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        .help-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+        
+        /* Enhanced Components */
+        .component {
+            padding: 12px 15px;
+            margin: 10px 0;
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            border: 2px solid #1e88e5;
+            border-radius: 8px;
+            cursor: grab;
+            text-align: center;
+            user-select: none;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .component:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        .component.dragging {
+            opacity: 0.7;
+            transform: rotate(5deg);
+        }
+        .component::before {
+            content: attr(data-icon);
+            font-size: 20px;
+            margin-right: 8px;
+        }
+        
+        /* Enhanced Drop Zones */
+        .dropzone {
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            border: 3px dashed #90caf9;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 11px;
+            color: #90caf9;
+            transition: all 0.3s;
+            background: rgba(255,255,255,0.5);
+        }
+        .dropzone:hover {
+            border-color: #1e88e5;
+            color: #1e88e5;
+            background: rgba(30,136,229,0.1);
+            transform: scale(1.05);
+        }
+        .dropzone.highlight {
+            border-color: #4caf50;
+            background: rgba(76,175,80,0.2);
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Component Placed */
+        .component-placed {
+            position: absolute;
+            padding: 10px;
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            border: 3px solid #4caf50;
+            border-radius: 8px;
+            text-align: center;
+            user-select: none;
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: placeSuccess 0.5s ease-out;
+        }
+        @keyframes placeSuccess {
+            0% { transform: scale(0) rotate(180deg); }
+            50% { transform: scale(1.2) rotate(90deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+        
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        /* Hint System */
+        .hint-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,193,7,0.9);
+            color: #333;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Sound Controls */
+        .sound-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        .sound-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        .sound-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        /* Enhanced Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            padding: 35px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 85%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.5s ease-out;
+        }
+        @keyframes modalSlideIn {
+            from { transform: scale(0.7) translateY(-50px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        
+        /* Enhanced Buttons */
+        .btn {
+            background: linear-gradient(145deg, #1e88e5, #1565c0);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            margin: 10px 8px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(30,136,229,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(30,136,229,0.4);
+        }
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        .btn:hover::before {
+            left: 100%;
+        }
+        .btn-secondary {
+            background: linear-gradient(145deg, #78909c, #546e7a);
+        }
+        .btn-success {
+            background: linear-gradient(145deg, #4caf50, #388e3c);
+        }
+        .btn-warning {
+            background: linear-gradient(145deg, #ff9800, #f57c00);
+        }
+        
+        /* Achievement System */
+        .achievement {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(145deg, #4caf50, #388e3c);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(76,175,80,0.4);
+            display: none;
+            animation: achievementSlide 0.5s ease-out;
+            z-index: 1001;
+        }
+        @keyframes achievementSlide {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        
+        /* Enhanced Animations */
+        .electron {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: radial-gradient(circle, #1e88e5, #0d47a1);
+            border-radius: 50%;
+            animation: flow 3s infinite linear;
+            box-shadow: 0 0 10px rgba(30,136,229,0.6);
+        }
+        @keyframes flow {
+            0% { left: 25%; top: 50%; transform: scale(1); }
+            25% { transform: scale(1.2); }
+            50% { left: 75%; top: 50%; transform: scale(1); }
+            75% { transform: scale(0.8); }
+            100% { left: 25%; top: 50%; transform: scale(1); }
+        }
+        
+        /* Quiz Enhancements */
+        .quiz-container {
+            display: none;
+            margin-top: 25px;
+            background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .quiz-question {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 2px solid #e3f2fd;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .quiz-options {
+            display: grid;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        .quiz-option {
+            padding: 12px 15px;
+            border: 2px solid #e3f2fd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+        .quiz-option:hover {
+            background: #e3f2fd;
+            transform: translateX(5px);
+        }
+        .quiz-option.selected {
+            background: #bbdefb;
+            border-color: #1e88e5;
+        }
+        .correct {
+            background: linear-gradient(145deg, #c8e6c9, #a5d6a7) !important;
+            border-color: #4caf50 !important;
+            animation: correctAnswer 0.5s ease-out;
+        }
+        .incorrect {
+            background: linear-gradient(145deg, #ffcdd2, #ef9a9a) !important;
+            border-color: #f44336 !important;
+            animation: shake 0.5s ease-out;
+        }
+        @keyframes correctAnswer {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        /* Leaderboard */
+        .leaderboard {
+            margin-top: 20px;
+            background: linear-gradient(145deg, #fff3e0, #ffe0b2);
+            padding: 20px;
+            border-radius: 12px;
+            display: none;
+        }
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .game-area {
+                flex-direction: column;
+            }
+            .info-panel {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sound-controls">
+            <button class="sound-btn" id="soundToggle" title="Toggle Sound">🔊</button>
+            <button class="sound-btn" id="musicToggle" title="Toggle Music">🎵</button>
+        </div>
+        
+        <header>
+            <h1>VOLTAIC VOYAGE: Petualangan Sel Galvani</h1>
+            <div class="subtitle">Jelajahi Dunia Elektrokimia dengan Seru!</div>
+        </header>
+        
+        <div class="level-selection" id="levelSelection">
+            <div class="level-btn active" data-level="easy">🟢 Mudah</div>
+            <div class="level-btn" data-level="medium">🟡 Sedang</div>
+            <div class="level-btn" data-level="hard">🔴 Sulit</div>
+        </div>
+        
+        <div class="info-panel">
+            <div class="info-item">
+                <div class="info-label">Waktu</div>
+                <div class="info-value" id="time">120</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Skor</div>
+                <div class="info-value" id="score">1000</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Komponen</div>
+                <div class="info-value"><span id="placedCount">0</span>/7</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Level</div>
+                <div class="info-value" id="currentLevel">Mudah</div>
+            </div>
+            <div class="info-item">
+                <button class="help-btn" id="helpBtn">❓ Bantuan</button>
+            </div>
+            <div class="info-item">
+                <button class="help-btn" id="hintBtn">💡 Petunjuk</button>
+            </div>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+        </div>
+        
+        <div class="game-area">
+            <div class="components-bank" id="componentsBank">
+                <h2>🧪 Bank Komponen</h2>
+                <div class="component"  draggable="true" data-component="zinc" data-icon="🥈">Elektroda Seng (Zn)</div>
+                <div class="component" draggable="true" data-component="copper" data-icon="🥉">Elektroda Tembaga (Cu)</div>
+                <div class="component" draggable="true" data-component="znso4" data-icon="🧪">Larutan ZnSO₄</div>
+                <div class="component" draggable="true" data-component="cuso4" data-icon="🧪">Larutan CuSO₄</div>
+                <div class="component" draggable="true" data-component="salt" data-icon="🌉">Jembatan Garam</div>
+                <div class="component" draggable="true" data-component="wire" data-icon="⚡">Kawat Penghubung</div>
+                <div class="component" draggable="true" data-component="voltmeter" data-icon="📊">Voltmeter</div>
+            </div>
+            
+            <div class="assembly-area" id="assemblyArea">
+                <h2>⚗️ Area Susunan Sel Galvani</h2>
+                <div class="hint-container" id="hintContainer"></div>
+            </div>
+        </div>
+        
+        <!-- Achievement Notification -->
+        <div class="achievement" id="achievement">
+            <div style="font-weight: bold; margin-bottom: 5px;">🏆 Pencapaian Terbuka!</div>
+            <div id="achievementText"></div>
+        </div>
+        
+        <!-- Start Modal -->
+        <div id="startModal" class="modal" style="display: flex;">
+            <div class="modal-content">
+                <h2>🚀 Selamat Datang di Voltaic Voyage!</h2>
+                <p>Bersiaplah untuk menjelajahi dunia elektrokimia yang menakjubkan!</p>
+                <div style="text-align: left; margin: 20px 0;">
+                    <h3>📋 Misi Anda:</h3>
+                    <ul>
+                        <li>Susun 7 komponen sel Galvani dengan benar</li>
+                        <li>Selesaikan dalam batas waktu yang ditentukan</li>
+                        <li>Raih skor tertinggi dengan kecepatan dan akurasi</li>
+                        <li>Pelajari konsep elektrokimia melalui pengalaman interaktif</li>
+                    </ul>
+                </div>
+                <p><strong>Pilih tingkat kesulitan dan mulai petualangan Anda!</strong></p>
+                <button id="startBtn" class="btn btn-success">🎮 Mulai Permainan</button>
+            </div>
+        </div>
+        
+        <!-- Help Modal -->
+        <div id="helpModal" class="modal">
+            <div class="modal-content">
+                <h2>❓ Panduan Permainan</h2>
+                <div style="text-align: left;">
+                    <h3>🎯 Tujuan:</h3>
+                    <p>Susun komponen sel Galvani pada posisi yang benar untuk membuat rangkaian yang berfungsi.</p>
+                    
+                    <h3>🎮 Cara Bermain:</h3>
+                    <ol>
+                        <li><strong>Drag & Drop:</strong> Seret komponen dari bank ke area susunan</li>
+                        <li><strong>Posisi Tepat:</strong> Letakkan setiap komponen pada zona yang sesuai</li>
+                        <li><strong>Waktu Terbatas:</strong> Selesaikan sebelum waktu habis</li>
+                        <li><strong>Petunjuk:</strong> Gunakan tombol petunjuk jika kesulitan</li>
+                    </ol>
+                    
+                    <h3>⚡ Konsep Sel Galvani:</h3>
+                    <ul>
+                        <li><strong>Anoda (Zn):</strong> tempat oksidasi, melepas elektron</li>
+                        <li><strong>Katoda (Cu):</strong> tempat reduksi, menerima elektron</li>
+                        <li><strong>Jembatan Garam:</strong> menjaga keseimbangan muatan</li>
+                        <li><strong>Elektrolit:</strong> media penghantar ion</li>
+                    </ul>
+                </div>
+                <button class="btn" id="closeHelpBtn">✅ Mengerti</button>
+            </div>
+        </div>
+        
+        <!-- Result Modal -->
+        <div id="resultModal" class="modal">
+            <div class="modal-content">
+                <h2 id="resultTitle"></h2>
+                <p id="resultMessage"></p>
+                <div id="animationContainer" class="animation-container"></div>
+                <div id="scoreResult" style="font-size: 24px; font-weight: bold; color: #1e88e5; margin: 15px 0;"></div>
+                <div id="achievementsList" style="margin: 20px 0;"></div>
+                <button class="btn btn-success" id="showExplanationBtn">📚 Lihat Penjelasan</button>
+                <button class="btn" id="shareBtn">📤 Bagikan Skor</button>
+                <button class="btn btn-secondary" id="restartBtn">🔄 Main Lagi</button>
+            </div>
+        </div>
+        
+        <!-- Explanation Section -->
+        <div class="explanation" id="explanation" style="display: none; margin-top: 25px; padding: 20px; border: 2px solid #bbdefb; border-radius: 12px; background: linear-gradient(145deg, #f5f9ff, #e3f2fd);">
+            <h2>📖 Penjelasan Sel Galvani</h2>
+            <div style="text-align: left;">
+                <p>Sel Galvani adalah perangkat elektrokimia yang mengubah energi kimia menjadi energi listrik melalui reaksi redoks spontan.</p>
+                
+                <h3>⚡ Reaksi yang Terjadi:</h3>
+                <div style="background: white; padding: 15px; border-radius: 8px; margin: 10px 0; font-family: monospace;">
+                    <strong>Anoda (Oksidasi):</strong> Zn(s) → Zn²⁺(aq) + 2e⁻<br>
+                    <strong>Katoda (Reduksi):</strong> Cu²⁺(aq) + 2e⁻ → Cu(s)<br>
+                    <strong>Reaksi Keseluruhan:</strong> Zn(s) + Cu²⁺(aq) → Zn²⁺(aq) + Cu(s)
+                </div>
+                
+                <h3>🔧 Fungsi Komponen:</h3>
+                <ul>
+                    <li><strong>Elektroda Seng:</strong> Anoda yang melepaskan elektron (teroksidasi)</li>
+                    <li><strong>Elektroda Tembaga:</strong> Katoda yang menerima elektron (tereduksi)</li>
+                    <li><strong>Larutan ZnSO₄:</strong> Elektrolit yang mengandung ion Zn²⁺</li>
+                    <li><strong>Larutan CuSO₄:</strong> Elektrolit yang mengandung ion Cu²⁺</li>
+                    <li><strong>Jembatan Garam:</strong> Menjaga keseimbangan muatan dan kelancaran arus</li>
+                    <li><strong>Kawat Penghubung:</strong> Media aliran elektron dari anoda ke katoda</li>
+                    <li><strong>Voltmeter:</strong> Mengukur beda potensial sel</li>
+                </ul>
+                
+                <h3>📈 Potensi Sel:</h3>
+                <p>Potensial standar sel Galvani Zn-Cu adalah <strong>+1,10 V</strong>, yang dihitung dari:</p>
+                <div style="background: white; padding: 10px; border-radius: 8px; margin: 10px 0;">
+                    E°sel = E°katoda - E°anoda = (+0,34 V) - (-0,76 V) = +1,10 V
+                </div>
+            </div>
+            
+            <button class="btn btn-warning" id="showQuizBtn">🧠 Uji Pengetahuan</button>
+        </div>
+        
+        <!-- Enhanced Quiz -->
+        <div class="quiz-container" id="quizContainer">
+            <h2>🧠 Kuis Elektrokimia</h2>
+            <div id="quizQuestions"></div>
+            <div id="quizResult"></div>
+            <button class="btn btn-warning" id="submitQuizBtn">🔍 Periksa Jawaban</button>
+        </div>
+        
+        <!-- Facts Section -->
+        <div class="facts-container" id="factsContainer" style="display: none; margin-top: 25px; padding: 20px; border: 2px solid #ffe0b2; border-radius: 12px; background: linear-gradient(145deg, #fff8e1, #ffe0b2);">
+            <h2>🌟 Fakta Menarik Sel Galvani</h2>
+            <div style="display: grid; gap: 15px; margin-top: 15px;">
+                <div class="fact">
+                    <strong>🐸 Penemuan Awal:</strong> Luigi Galvani menemukan bioelektrisitas pada tahun 1780-an saat eksperimen dengan kaki katak yang berkedut ketika disentuh logam.
+                </div>
+                <div class="fact">
+                    <strong>🔋 Baterai Pertama:</strong> Alessandro Volta mengembangkan temuan Galvani menjadi "tumpukan Volta" - baterai elektrokimia pertama di dunia (1800).
+                </div>
+                <div class="fact">
+                    <strong>⚡ Aplikasi Modern:</strong> Prinsip sel Galvani digunakan dalam berbagai baterai modern: alkaline, lithium-ion, dan fuel cell.
+                </div>
+                <div class="fact">
+                    <strong>🌍 Dampak Lingkungan:</strong> Sel Galvani ramah lingkungan karena menggunakan reaksi kimia alami tanpa pembakaran.
+                </div>
+                <div class="fact">
+                    <strong>🔬 Nilai Historis:</strong> Penemuan sel Galvani memulai era listrik modern dan meletakkan dasar ilmu elektrokimia.
+                </div>
+            </div>
+        </div>
+        
+        <!-- Leaderboard -->
+        <div class="leaderboard" id="leaderboard">
+            <h2>🏆 Papan Peringkat</h2>
+            <div id="leaderboardList">
+                <div class="leaderboard-entry">
+                    <span>🥇 Master Elektron</span>
+                    <span>1500 poin</span>
+                </div>
+                <div class="leaderboard-entry">
+                    <span>🥈 Guru Galvani</span>
+                    <span>1350 poin</span>
+                </div>
+                <div class="leaderboard-entry">
+                    <span>🥉 Ahli Anoda</span>
+                    <span>1200 poin</span>
+                </div>
+            </div>
+            <button class="btn" id="saveScoreBtn">💾 Simpan Skor Anda</button>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced Game Variables
+        let gameStarted = false;
+        let gameEnded = false;
+        let timer;
+        let timeLeft = 120;
+        let currentScore = 1000;
+        let currentLevel = 'easy';
+        let hintsUsed = 0;
+        let soundEnabled = true;
+        let musicEnabled = true;
+        let placedComponents = {
+            zinc: false,
+            copper: false,
+            znso4: false,
+            cuso4: false,
+            salt: false,
+            wire: false,
+            voltmeter: false
+        };
+        
+        // Level configurations
+        const levelConfigs = {
+            easy: { time: 180, scoreDeduction: 3, hints: 3 },
+            medium: { time: 120, scoreDeduction: 5, hints: 2 },
+            hard: { time: 90, scoreDeduction: 8, hints: 1 }
+        };
+        
+        // Enhanced drop zones with better positioning
+        const dropZones = [
+            { id: 'zinc', label: 'Elektroda Zn', left: '15%', top: '45%', hint: 'Anoda - tempat oksidasi' },
+            { id: 'copper', label: 'Elektroda Cu', left: '75%', top: '45%', hint: 'Katoda - tempat reduksi' },
+            { id: 'znso4', label: 'Larutan ZnSO₄', left: '15%', top: '75%', hint: 'Di sekitar elektroda seng' },
+            { id: 'cuso4', label: 'Larutan CuSO₄', left: '75%', top: '75%', hint: 'Di sekitar elektroda tembaga' },
+            { id: 'salt', label: 'Jembatan Garam', left: '45%', top: '75%', hint: 'Menghubungkan kedua larutan' },
+            { id: 'wire', label: 'Kawat', left: '45%', top: '25%', hint: 'Menghubungkan kedua elektroda' },
+            { id: 'voltmeter', label: 'Voltmeter', left: '45%', top: '5%', hint: 'Mengukur tegangan sel' }
+        ];
+        
+        // Enhanced quiz with more questions
+        const quizQuestions = [
+            {
+                question: "Pada sel Galvani Zn-Cu, manakah pernyataan yang benar?",
+                options: [
+                    "Elektroda seng mengalami reduksi",
+                    "Elektroda seng mengalami oksidasi",
+                    "Elektroda tembaga adalah anoda",
+                    "Elektron mengalir dari tembaga ke seng"
+                ],
+                correctAnswer: 1,
+                explanation: "Elektroda seng mengalami oksidasi (kehilangan elektron) dan berfungsi sebagai anoda."
+            },
+            {
+                question: "Fungsi utama jembatan garam dalam sel Galvani adalah...",
+                options: [
+                    "Mempercepat reaksi kimia",
+                    "Memperlambat korosi elektroda",
+                    "Menjaga keseimbangan muatan dalam larutan",
+                    "Meningkatkan voltase sel"
+                ],
+                correctAnswer: 2,
+                explanation: "Jembatan garam menjaga keseimbangan muatan dengan memungkinkan perpindahan ion antara kedua setengah sel."
+            },
+            {
+                question: "Apa yang terjadi pada larutan CuSO₄ dalam sel Galvani Zn-Cu?",
+                options: [
+                    "Konsentrasi Cu²⁺ bertambah",
+                    "Konsentrasi Cu²⁺ berkurang",
+                    "Konsentrasi SO₄²⁻ bertambah",
+                    "Tidak ada perubahan konsentrasi ion"
+                ],
+                correctAnswer: 1,
+                explanation: "Ion Cu²⁺ tereduksi menjadi Cu logam, sehingga konsentrasinya berkurang."
+            },
+            {
+                question: "Potensial standar sel Galvani Zn-Cu adalah...",
+                options: [
+                    "+0,76 V",
+                    "+1,10 V",
+                    "+1,86 V",
+                    "+0,34 V"
+                ],
+                correctAnswer: 1,
+                explanation: "E°sel = E°Cu²⁺/Cu - E°Zn²⁺/Zn = 0,34 - (-0,76) = +1,10 V"
+            },
+            {
+                question: "Arah aliran elektron dalam sel Galvani adalah...",
+                options: [
+                    "Dari katoda ke anoda melalui kawat eksternal",
+                    "Dari anoda ke katoda melalui kawat eksternal",
+                    "Dari anoda ke katoda melalui jembatan garam",
+                    "Elektron tidak mengalir dalam sel Galvani"
+                ],
+                correctAnswer: 1,
+                explanation: "Elektron mengalir dari anoda (Zn) ke katoda (Cu) melalui kawat eksternal."
+            }
+        ];
+        
+        // Achievement system
+        const achievements = {
+            speedRacer: { name: "Speed Racer", desc: "Menyelesaikan dalam waktu kurang dari 60 detik", icon: "🏃‍♂️" },
+            perfectScore: { name: "Perfect Score", desc: "Menyelesaikan tanpa kehilangan poin", icon: "💯" },
+            noHints: { name: "Independent", desc: "Menyelesaikan tanpa menggunakan petunjuk", icon: "🎯" },
+            quizMaster: { name: "Quiz Master", desc: "Menjawab semua kuis dengan benar", icon: "🧠" },
+            hardMode: { name: "Expert", desc: "Menyelesaikan mode sulit", icon: "🔥" }
+        };
+        
+        let earnedAchievements = [];
+        
+        // DOM elements
+        const componentsBank = document.getElementById('componentsBank');
+        const assemblyArea = document.getElementById('assemblyArea');
+        const timeElement = document.getElementById('time');
+        const scoreElement = document.getElementById('score');
+        const placedCountElement = document.getElementById('placedCount');
+        const currentLevelElement = document.getElementById('currentLevel');
+        const progressBar = document.getElementById('progressBar');
+        const hintContainer = document.getElementById('hintContainer');
+        const achievementDiv = document.getElementById('achievement');
+        const achievementText = document.getElementById('achievementText');
+        
+        // Modal elements
+        const startModal = document.getElementById('startModal');
+        const helpModal = document.getElementById('helpModal');
+        const resultModal = document.getElementById('resultModal');
+        const explanation = document.getElementById('explanation');
+        const quizContainer = document.getElementById('quizContainer');
+        const factsContainer = document.getElementById('factsContainer');
+        const leaderboard = document.getElementById('leaderboard');
+        
+        // Button elements
+        const levelButtons = document.querySelectorAll('.level-btn');
+        const startBtn = document.getElementById('startBtn');
+        const helpBtn = document.getElementById('helpBtn');
+        const hintBtn = document.getElementById('hintBtn');
+        const closeHelpBtn = document.getElementById('closeHelpBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const showExplanationBtn = document.getElementById('showExplanationBtn');
+        const showQuizBtn = document.getElementById('showQuizBtn');
+        const submitQuizBtn = document.getElementById('submitQuizBtn');
+        const shareBtn = document.getElementById('shareBtn');
+        const saveScoreBtn = document.getElementById('saveScoreBtn');
+        const soundToggle = document.getElementById('soundToggle');
+        const musicToggle = document.getElementById('musicToggle');
+        
+        // Initialize game
+        function initGame() {
+            createDropZones();
+            initDragAndDrop();
+            initEventListeners();
+            loadSettings();
+            updateLevelDisplay();
+        }
+        
+        // Event listeners
+        function initEventListeners() {
+            // Level selection
+            levelButtons.forEach(btn => {
+                btn.addEventListener('click', () => selectLevel(btn.dataset.level));
+            });
+            
+            // Modal buttons
+            startBtn.addEventListener('click', startGame);
+            helpBtn.addEventListener('click', () => showModal(helpModal));
+            hintBtn.addEventListener('click', showHint);
+            closeHelpBtn.addEventListener('click', () => hideModal(helpModal));
+            restartBtn.addEventListener('click', resetGame);
+            showExplanationBtn.addEventListener('click', showExplanation);
+            showQuizBtn.addEventListener('click', showQuiz);
+            submitQuizBtn.addEventListener('click', checkQuizAnswers);
+            shareBtn.addEventListener('click', shareScore);
+            saveScoreBtn.addEventListener('click', saveScore);
+            
+            // Sound controls
+            soundToggle.addEventListener('click', toggleSound);
+            musicToggle.addEventListener('click', toggleMusic);
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', handleKeyboard);
+        }
+        
+        // Level selection
+        function selectLevel(level) {
+            currentLevel = level;
+            levelButtons.forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[data-level="${level}"]`).classList.add('active');
+            updateLevelDisplay();
+        }
+        
+        function updateLevelDisplay() {
+            const config = levelConfigs[currentLevel];
+            timeLeft = config.time;
+            currentScore = 1000;
+            timeElement.textContent = timeLeft;
+            scoreElement.textContent = currentScore;
+            currentLevelElement.textContent = currentLevel === 'easy' ? 'Mudah' : 
+                                           currentLevel === 'medium' ? 'Sedang' : 'Sulit';
+        }
+        
+        // Create enhanced drop zones
+        function createDropZones() {
+            dropZones.forEach(zone => {
+                const dropZone = document.createElement('div');
+                dropZone.className = 'dropzone';
+                dropZone.id = `dropzone-${zone.id}`;
+                dropZone.innerHTML = `<div>${zone.label}</div>`;
+                dropZone.style.left = zone.left;
+                dropZone.style.top = zone.top;
+                dropZone.dataset.component = zone.id;
+                dropZone.dataset.hint = zone.hint;
+                assemblyArea.appendChild(dropZone);
+            });
+        }
+        
+        // Enhanced drag and drop
+        function initDragAndDrop() {
+            const components = document.querySelectorAll('.component');
+            
+            components.forEach(component => {
+                component.addEventListener('dragstart', (e) => {
+                    if (gameStarted && !gameEnded) {
+                        component.classList.add('dragging');
+                        e.dataTransfer.setData('text/plain', component.dataset.component);
+                        playSound('pickup');
+                    } else {
+                        e.preventDefault();
+                    }
+                });
+                
+                component.addEventListener('dragend', () => {
+                    component.classList.remove('dragging');
+                });
+            });
+            
+            const dropZonesElems = document.querySelectorAll('.dropzone');
+            
+            dropZonesElems.forEach(zone => {
+                zone.addEventListener('dragover', (e) => {
+                    if (gameStarted && !gameEnded) {
+                        e.preventDefault();
+                        zone.classList.add('highlight');
+                    }
+                });
+                
+                zone.addEventListener('dragleave', () => {
+                    zone.classList.remove('highlight');
+                });
+                
+                zone.addEventListener('drop', (e) => {
+                    if (gameStarted && !gameEnded) {
+                        e.preventDefault();
+                        zone.classList.remove('highlight');
+                        const componentType = e.dataTransfer.getData('text/plain');
+                        const zoneType = zone.dataset.component;
+                        
+                        if (componentType === zoneType && !placedComponents[componentType]) {
+                            placeComponent(componentType, zone);
+                            playSound('place');
+                            updateProgress();
+                            checkCompletion();
+                        } else {
+                            playSound('error');
+                            showTemporaryMessage("⚠️ Komponen tidak sesuai!", 'warning');
+                        }
+                    }
+                });
+            });
+        }
+        
+        // Enhanced component placement
+        function placeComponent(componentType, zone) {
+            const component = document.createElement('div');
+            component.className = 'component-placed';
+            
+            const componentData = {
+                zinc: { text: 'Zn', bg: '#d3d3d3', color: '#333' },
+                copper: { text: 'Cu', bg: '#d87037', color: 'white' },
+                znso4: { text: 'ZnSO₄', bg: '#e6f3ff', color: '#333' },
+                cuso4: { text: 'CuSO₄', bg: '#add8e6', color: '#333' },
+                salt: { text: 'NaCl', bg: '#f5f5dc', color: '#333' },
+                wire: { text: '⚡', bg: '#696969', color: 'white' },
+                voltmeter: { text: 'V', bg: '#ffebcd', color: '#333' }
+            };
+            
+            const data = componentData[componentType];
+            component.textContent = data.text;
+            component.style.backgroundColor = data.bg;
+            component.style.color = data.color;
+            component.style.width = '80px';
+            component.style.height = '80px';
+            component.style.display = 'flex';
+            component.style.justifyContent = 'center';
+            component.style.alignItems = 'center';
+            component.style.fontSize = '16px';
+            component.style.fontWeight = 'bold';
+            
+            zone.innerHTML = '';
+            zone.appendChild(component);
+            placedComponents[componentType] = true;
+            
+            // Hide component in bank
+            const bankComponent = document.querySelector(`.component[data-component="${componentType}"]`);
+            if (bankComponent) {
+                bankComponent.style.opacity = '0.3';
+                bankComponent.style.pointerEvents = 'none';
+            }
+            
+            // Show success message
+            showTemporaryMessage(`✅ ${zone.dataset.hint}`, 'success');
+        }
+        
+        // Update progress
+        function updateProgress() {
+            const placed = Object.values(placedComponents).filter(Boolean).length;
+            placedCountElement.textContent = placed;
+            progressBar.style.width = `${(placed / 7) * 100}%`;
+        }
+        
+        // Hint system
+        function showHint() {
+            const config = levelConfigs[currentLevel];
+            if (hintsUsed >= config.hints) {
+                showTemporaryMessage(`⚠️ Maksimal ${config.hints} petunjuk untuk level ini!`, 'warning');
+                return;
+            }
+            
+            hintsUsed++;
+            const unplacedComponents = Object.keys(placedComponents).filter(key => !placedComponents[key]);
+            
+            if (unplacedComponents.length > 0) {
+                const randomComponent = unplacedComponents[Math.floor(Math.random() * unplacedComponents.length)];
+                const zone = dropZones.find(z => z.id === randomComponent);
+                const hintText = `💡 ${zone.hint}`;
+                
+                hintContainer.textContent = hintText;
+                hintContainer.style.display = 'block';
+                
+                // Highlight the correct zone
+                const dropZone = document.getElementById(`dropzone-${randomComponent}`);
+                dropZone.classList.add('highlight');
+                
+                setTimeout(() => {
+                    hintContainer.style.display = 'none';
+                    dropZone.classList.remove('highlight');
+                }, 5000);
+                
+                playSound('hint');
+                currentScore -= 50; // Penalty for using hint
+                scoreElement.textContent = currentScore;
+            }
+        }
+        
+        // Start game
+        function startGame() {
+            hideModal(startModal);
+            gameStarted = true;
+            hintsUsed = 0;
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                timeElement.textContent = timeLeft;
+                
+                const config = levelConfigs[currentLevel];
+                currentScore = Math.max(0, currentScore - config.scoreDeduction);
+                scoreElement.textContent = currentScore;
+                
+                if (timeLeft <= 0) {
+                    endGame(false);
+                }
+            }, 1000);
+            
+            playSound('start');
+        }
+        
+        // Check completion
+        function checkCompletion() {
+            const allPlaced = Object.values(placedComponents).every(placed => placed);
+            
+            if (allPlaced) {
+                endGame(true);
+            }
+        }
+        
+        // End game
+        function endGame(success) {
+            clearInterval(timer);
+            gameEnded = true;
+            
+            const resultTitle = document.getElementById('resultTitle');
+            const resultMessage = document.getElementById('resultMessage');
+            const scoreResult = document.getElementById('scoreResult');
+            const animationContainer = document.getElementById('animationContainer');
+            const achievementsList = document.getElementById('achievementsList');
+            
+            if (success) {
+                resultTitle.textContent = '🎉 Selamat!';
+                resultMessage.textContent = 'Anda berhasil menyusun sel Galvani dengan sempurna!';
+                scoreResult.textContent = `Skor Akhir: ${currentScore}`;
+                
+                // Create enhanced animation
+                createElectronAnimation(animationContainer);
+                
+                // Check achievements
+                checkAchievements();
+                
+                // Display achievements
+                if (earnedAchievements.length > 0) {
+                    achievementsList.innerHTML = '<h3>🏆 Pencapaian Terbuka:</h3>' + 
+                        earnedAchievements.map(a => `<div>${a.icon} ${a.name}: ${a.desc}</div>`).join('');
+                }
+                
+                playSound('success');
+            } else {
+                resultTitle.textContent = '⏰ Waktu Habis!';
+                resultMessage.textContent = 'Jangan menyerah! Coba lagi untuk menguasai elektrokimia.';
+                scoreResult.textContent = 'Skor Akhir: 0';
+                animationContainer.innerHTML = '<div style="font-size: 48px; opacity: 0.5;">😔</div>';
+                playSound('failure');
+            }
+            
+            showModal(resultModal);
+        }
+        
+        // Enhanced electron animation
+        function createElectronAnimation(container) {
+            container.innerHTML = '';
+            
+            // Create circuit path
+            const circuit = document.createElement('div');
+            circuit.style.position = 'relative';
+            circuit.style.width = '100%';
+            circuit.style.height = '200px';
+            circuit.style.background = `
+                radial-gradient(circle at 25% 50%, #ffd700 20px, transparent 21px),
+                radial-gradient(circle at 75% 50%, #cd7f32 20px, transparent 21px),
+                linear-gradient(90deg, transparent 25%, #666 25%, #666 75%, transparent 75%)
+            `;
+            circuit.style.backgroundSize = '100% 100%, 100% 100%, 100% 4px';
+            circuit.style.backgroundPosition = 'center, center, center 50%';
+            circuit.style.backgroundRepeat = 'no-repeat';
+            
+            container.appendChild(circuit);
+            
+            // Create multiple electrons
+            for (let i = 0; i < 8; i++) {
+                const electron = document.createElement('div');
+                electron.className = 'electron';
+                electron.style.animationDelay = `${i * 0.3}s`;
+                circuit.appendChild(electron);
+            }
+            
+            // Add voltage indicator
+            const voltage = document.createElement('div');
+            voltage.innerHTML = '⚡ 1.10 V';
+            voltage.style.position = 'absolute';
+            voltage.style.top = '10px';
+            voltage.style.right = '10px';
+            voltage.style.background = 'rgba(255,255,255,0.9)';
+            voltage.style.padding = '5px 10px';
+            voltage.style.borderRadius = '15px';
+            voltage.style.fontWeight = 'bold';
+            voltage.style.color = '#1e88e5';
+            circuit.appendChild(voltage);
+        }
+        
+        // Achievement checking
+        function checkAchievements() {
+            earnedAchievements = [];
+            const timeSpent = levelConfigs[currentLevel].time - timeLeft;
+            
+            // Speed achievement
+            if (timeSpent < 60) {
+                earnedAchievements.push(achievements.speedRacer);
+                showAchievement(achievements.speedRacer);
+            }
+            
+            // Perfect score
+            if (currentScore >= 1000) {
+                earnedAchievements.push(achievements.perfectScore);
+                showAchievement(achievements.perfectScore);
+            }
+            
+            // No hints
+            if (hintsUsed === 0) {
+                earnedAchievements.push(achievements.noHints);
+                showAchievement(achievements.noHints);
+            }
+            
+            // Hard mode
+            if (currentLevel === 'hard') {
+                earnedAchievements.push(achievements.hardMode);
+                showAchievement(achievements.hardMode);
+            }
+        }
+        
+        // Show achievement notification
+        function showAchievement(achievement) {
+            achievementText.textContent = `${achievement.icon} ${achievement.name}`;
+            achievementDiv.style.display = 'block';
+            playSound('achievement');
+            
+            setTimeout(() => {
+                achievementDiv.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Enhanced quiz
+        function showQuiz() {
+            hideModal(resultModal);
+            quizContainer.style.display = 'block';
+            
+            const questionsContainer = document.getElementById('quizQuestions');
+            questionsContainer.innerHTML = '';
+            
+            // Randomly select 3 questions
+            const selectedQuestions = quizQuestions
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 3);
+            
+            selectedQuestions.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'quiz-question';
+                
+                questionDiv.innerHTML = `
+                    <div style="font-weight: bold; margin-bottom: 10px;">
+                        Pertanyaan ${index + 1}: ${q.question}
+                    </div>
+                    <div class="quiz-options">
+                        ${q.options.map((option, i) => `
+                            <div class="quiz-option" data-question="${index}" data-option="${i}">
+                                ${String.fromCharCode(65 + i)}. ${option}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+                questionsContainer.appendChild(questionDiv);
+            });
+            
+            // Store selected questions for checking
+            window.currentQuizQuestions = selectedQuestions;
+            
+            // Add click events
+            document.querySelectorAll('.quiz-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    const questionIndex = option.dataset.question;
+                    const siblingOptions = document.querySelectorAll(`.quiz-option[data-question="${questionIndex}"]`);
+                    
+                    siblingOptions.forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                    playSound('click');
+                });
+            });
+            
+            window.scrollTo(0, quizContainer.offsetTop);
+        }
+        
+        // Check quiz answers
+        function checkQuizAnswers() {
+            let correctAnswers = 0;
+            const questions = window.currentQuizQuestions;
+            
+            questions.forEach((q, index) => {
+                const selectedOption = document.querySelector(`.quiz-option[data-question="${index}"].selected`);
+                const correctOption = document.querySelector(`.quiz-option[data-question="${index}"][data-option="${q.correctAnswer}"]`);
+                
+                if (selectedOption) {
+                    const optionIndex = parseInt(selectedOption.dataset.option);
+                    
+                    if (optionIndex === q.correctAnswer) {
+                        selectedOption.classList.add('correct');
+                        correctAnswers++;
+                        playSound('correct');
+                    } else {
+                        selectedOption.classList.add('incorrect');
+                        correctOption.classList.add('correct');
+                        playSound('incorrect');
+                    }
+                } else {
+                    correctOption.classList.add('correct');
+                }
+                
+                // Show explanation
+                const questionDiv = selectedOption ? selectedOption.closest('.quiz-question') : correctOption.closest('.quiz-question');
+                const explanationDiv = document.createElement('div');
+                explanationDiv.style.marginTop = '10px';
+                explanationDiv.style.padding = '10px';
+                explanationDiv.style.background = '#f0f8ff';
+                explanationDiv.style.borderRadius = '5px';
+                explanationDiv.innerHTML = `<strong>💡 Penjelasan:</strong> ${q.explanation}`;
+                questionDiv.appendChild(explanationDiv);
+            });
+            
+            // Show results
+            const quizResult = document.getElementById('quizResult');
+            const percentage = Math.round((correctAnswers / questions.length) * 100);
+            let resultMessage = '';
+            let resultColor = '';
+            
+            if (percentage >= 80) {
+                resultMessage = '🌟 Luar biasa! Anda menguasai elektrokimia!';
+                resultColor = '#4caf50';
+                if (correctAnswers === questions.length) {
+                    showAchievement(achievements.quizMaster);
+                }
+            } else if (percentage >= 60) {
+                resultMessage = '👍 Bagus! Terus tingkatkan pemahaman Anda!';
+                resultColor = '#ff9800';
+            } else {
+                resultMessage = '📚 Perlu belajar lebih giat lagi!';
+                resultColor = '#f44336';
+            }
+            
+            quizResult.innerHTML = `
+                <div style="margin-top: 20px; padding: 15px; border-radius: 8px; background: white; border: 2px solid ${resultColor};">
+                    <div style="font-size: 20px; font-weight: bold; color: ${resultColor}; margin-bottom: 10px;">
+                        Hasil: ${correctAnswers} dari ${questions.length} benar (${percentage}%)
+                    </div>
+                    <div style="color: ${resultColor};">${resultMessage}</div>
+                </div>
+            `;
+            
+            submitQuizBtn.style.display = 'none';
+            factsContainer.style.display = 'block';
+            leaderboard.style.display = 'block';
+        }
+        
+        // Utility functions
+        function showModal(modal) {
+            modal.style.display = 'flex';
+        }
+        
+        function hideModal(modal) {
+            modal.style.display = 'none';
+        }
+        
+        function showTemporaryMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.style.position = 'fixed';
+            messageDiv.style.top = '100px';
+            messageDiv.style.left = '50%';
+            messageDiv.style.transform = 'translateX(-50%)';
+            messageDiv.style.padding = '10px 20px';
+            messageDiv.style.borderRadius = '8px';
+            messageDiv.style.color = 'white';
+            messageDiv.style.fontWeight = 'bold';
+            messageDiv.style.zIndex = '1002';
+            messageDiv.style.animation = 'fadeIn 0.3s ease-in';
+            messageDiv.textContent = message;
+            
+            if (type === 'success') {
+                messageDiv.style.background = '#4caf50';
+            } else if (type === 'warning') {
+                messageDiv.style.background = '#ff9800';
+            } else {
+                messageDiv.style.background = '#f44336';
+            }
+            
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 2000);
+        }
+        
+        function playSound(type) {
+            if (!soundEnabled) return;
+            
+            // Create audio context for sound effects
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            switch(type) {
+                case 'pickup':
+                    oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+                    break;
+                case 'place':
+                    oscillator.frequency.setValueAtTime(660, audioContext.currentTime);
+                    break;
+                case 'success':
+                    oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+                    break;
+                case 'error':
+                    oscillator.frequency.setValueAtTime(220, audioContext.currentTime);
+                    break;
+                case 'hint':
+                    oscillator.frequency.setValueAtTime(550, audioContext.currentTime);
+                    break;
+                case 'achievement':
+                    oscillator.frequency.setValueAtTime(1100, audioContext.currentTime);
+                    break;
+                default:
+                    oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+            }
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+        
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            soundToggle.textContent = soundEnabled ? '🔊' : '🔇';
+            soundToggle.title = soundEnabled ? 'Matikan Suara' : 'Nyalakan Suara';
+            saveSettings();
+        }
+        
+        function toggleMusic() {
+            musicEnabled = !musicEnabled;
+            musicToggle.textContent = musicEnabled ? '🎵' : '🎶';
+            musicToggle.title = musicEnabled ? 'Matikan Musik' : 'Nyalakan Musik';
+            saveSettings();
+        }
+        
+        function handleKeyboard(e) {
+            if (!gameStarted || gameEnded) return;
+            
+            switch(e.key) {
+                case 'h':
+                case 'H':
+                    showHint();
+                    break;
+                case ' ':
+                    e.preventDefault();
+                    showModal(helpModal);
+                    break;
+                case 'Escape':
+                    if (helpModal.style.display === 'flex') {
+                        hideModal(helpModal);
+                    }
+                    break;
+            }
+        }
+        
+        function shareScore() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'VOLTAIC VOYAGE - Skor Saya',
+                    text: `Saya berhasil menyelesaikan Voltaic Voyage dengan skor ${currentScore}! Tantang diri Anda untuk memahami sel Galvani!`,
+                    url: window.location.href
+                });
+            } else {
+                // Fallback for browsers that don't support Web Share API
+                const text = `Saya berhasil menyelesaikan Voltaic Voyage dengan skor ${currentScore}! Level: ${currentLevel}`;
+                navigator.clipboard.writeText(text).then(() => {
+                    showTemporaryMessage('📋 Skor berhasil disalin ke clipboard!', 'success');
+                });
+            }
+        }
+        
+        function saveScore() {
+            const playerName = prompt('Masukkan nama Anda untuk papan peringkat:');
+            if (playerName && playerName.trim()) {
+                const scores = JSON.parse(localStorage.getItem('voltaicVoyageScores') || '[]');
+                scores.push({
+                    name: playerName.trim(),
+                    score: currentScore,
+                    level: currentLevel,
+                    date: new Date().toLocaleDateString('id-ID'),
+                    achievements: earnedAchievements.length
+                });
+                
+                // Sort and keep top 10
+                scores.sort((a, b) => b.score - a.score);
+                scores.splice(10);
+                
+                localStorage.setItem('voltaicVoyageScores', JSON.stringify(scores));
+                updateLeaderboard();
+                showTemporaryMessage('💾 Skor berhasil disimpan!', 'success');
+            }
+        }
+        
+        function updateLeaderboard() {
+            const scores = JSON.parse(localStorage.getItem('voltaicVoyageScores') || '[]');
+            const leaderboardList = document.getElementById('leaderboardList');
+            
+            if (scores.length === 0) {
+                leaderboardList.innerHTML = '<div class="leaderboard-entry">Belum ada skor tersimpan</div>';
+                return;
+            }
+            
+            leaderboardList.innerHTML = scores.map((score, index) => {
+                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
+                const levelEmoji = score.level === 'easy' ? '🟢' : score.level === 'medium' ? '🟡' : '🔴';
+                
+                return `
+                    <div class="leaderboard-entry">
+                        <span>${medal} ${score.name} ${levelEmoji}</span>
+                        <span>${score.score} poin ${score.achievements > 0 ? '🏆'.repeat(score.achievements) : ''}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function saveSettings() {
+            const settings = {
+                soundEnabled,
+                musicEnabled,
+                currentLevel
+            };
+            localStorage.setItem('voltaicVoyageSettings', JSON.stringify(settings));
+        }
+        
+        function loadSettings() {
+            const settings = JSON.parse(localStorage.getItem('voltaicVoyageSettings') || '{}');
+            
+            if (settings.soundEnabled !== undefined) {
+                soundEnabled = settings.soundEnabled;
+                soundToggle.textContent = soundEnabled ? '🔊' : '🔇';
+            }
+            
+            if (settings.musicEnabled !== undefined) {
+                musicEnabled = settings.musicEnabled;
+                musicToggle.textContent = musicEnabled ? '🎵' : '🎶';
+            }
+            
+            if (settings.currentLevel) {
+                selectLevel(settings.currentLevel);
+            }
+            
+            updateLeaderboard();
+        }
+        
+        function showExplanation() {
+            hideModal(resultModal);
+            explanation.style.display = 'block';
+            window.scrollTo({ top: explanation.offsetTop, behavior: 'smooth' });
+        }
+        
+        function resetGame() {
+            // Reset game state
+            gameStarted = false;
+            gameEnded = false;
+            hintsUsed = 0;
+            earnedAchievements = [];
+            
+            // Clear timer
+            if (timer) {
+                clearInterval(timer);
+            }
+            
+            // Reset component states
+            Object.keys(placedComponents).forEach(key => {
+                placedComponents[key] = false;
+            });
+            
+            // Reset UI elements
+            updateLevelDisplay();
+            placedCountElement.textContent = '0';
+            progressBar.style.width = '0%';
+            hintContainer.style.display = 'none';
+            
+            // Clear drop zones
+            document.querySelectorAll('.dropzone').forEach(zone => {
+                const zoneData = dropZones.find(z => z.id === zone.dataset.component);
+                zone.innerHTML = `<div>${zoneData.label}</div>`;
+                zone.classList.remove('highlight');
+            });
+            
+            // Reset components in bank
+            document.querySelectorAll('.component').forEach(component => {
+                component.style.opacity = '1';
+                component.style.pointerEvents = 'auto';
+                component.classList.remove('dragging');
+            });
+            
+            // Hide all sections
+            hideModal(resultModal);
+            explanation.style.display = 'none';
+            quizContainer.style.display = 'none';
+            factsContainer.style.display = 'none';
+            leaderboard.style.display = 'none';
+            achievementDiv.style.display = 'none';
+            
+            // Reset quiz
+            const quizResult = document.getElementById('quizResult');
+            if (quizResult) {
+                quizResult.innerHTML = '';
+            }
+            submitQuizBtn.style.display = 'block';
+            
+            // Show start modal
+            showModal(startModal);
+            
+            // Save current settings
+            saveSettings();
+        }
+        
+        // Enhanced tutorial system
+        function showTutorial() {
+            const tutorialSteps = [
+                {
+                    target: '.components-bank',
+                    title: '🧪 Bank Komponen',
+                    content: 'Seret komponen dari sini ke area susunan. Setiap komponen memiliki fungsi khusus dalam sel Galvani.'
+                },
+                {
+                    target: '.assembly-area',
+                    title: '⚗️ Area Susunan',
+                    content: 'Letakkan komponen pada zona yang tepat. Perhatikan label dan petunjuk untuk setiap zona.'
+                },
+                {
+                    target: '.info-panel',
+                    title: '📊 Panel Informasi',
+                    content: 'Pantau waktu, skor, dan progres Anda. Gunakan tombol bantuan dan petunjuk jika diperlukan.'
+                },
+                {
+                    target: '.level-selection',
+                    title: '🎚️ Pilihan Level',
+                    content: 'Pilih tingkat kesulitan: Mudah (180s), Sedang (120s), atau Sulit (90s). Setiap level memiliki tantangan berbeda.'
+                }
+            ];
+            
+            // Implementation of tutorial overlay would go here
+            // For now, we'll show a simple introduction
+            showTemporaryMessage('🎓 Gunakan tombol Bantuan untuk mempelajari cara bermain!', 'success');
+        }
+        
+        // Auto-save progress (for longer sessions)
+        function autoSave() {
+            if (gameStarted && !gameEnded) {
+                const gameState = {
+                    timeLeft,
+                    currentScore,
+                    currentLevel,
+                    placedComponents: {...placedComponents},
+                    hintsUsed,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem('voltaicVoyageAutoSave', JSON.stringify(gameState));
+            }
+        }
+        
+        // Load auto-saved progress
+        function loadAutoSave() {
+            const autoSave = localStorage.getItem('voltaicVoyageAutoSave');
+            if (autoSave) {
+                const gameState = JSON.parse(autoSave);
+                const timeDiff = Date.now() - gameState.timestamp;
+                
+                // Only restore if saved within last 10 minutes
+                if (timeDiff < 600000) {
+                    const restore = confirm('Ditemukan permainan yang tersimpan. Lanjutkan permainan sebelumnya?');
+                    if (restore) {
+                        // Restore game state
+                        timeLeft = gameState.timeLeft;
+                        currentScore = gameState.currentScore;
+                        currentLevel = gameState.currentLevel;
+                        placedComponents = gameState.placedComponents;
+                        hintsUsed = gameState.hintsUsed;
+                        
+                        // Update UI
+                        selectLevel(currentLevel);
+                        updateProgress();
+                        
+                        // Restore placed components
+                        Object.keys(placedComponents).forEach(componentType => {
+                            if (placedComponents[componentType]) {
+                                const zone = document.getElementById(`dropzone-${componentType}`);
+                                if (zone) {
+                                    placeComponent(componentType, zone);
+                                }
+                            }
+                        });
+                        
+                        return true;
+                    }
+                }
+                
+                // Clear old auto-save
+                localStorage.removeItem('voltaicVoyageAutoSave');
+            }
+            return false;
+        }
+        
+        // Performance monitoring
+        function trackPerformance() {
+            const startTime = performance.now();
+            
+            return {
+                end: () => {
+                    const endTime = performance.now();
+                    const duration = endTime - startTime;
+                    
+                    // Log performance data (could be sent to analytics)
+                    console.log(`Game completion time: ${duration}ms`);
+                    
+                    return duration;
+                }
+            };
+        }
+        
+        // Initialize game when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            initGame();
+            
+            // Check for auto-saved progress
+            if (!loadAutoSave()) {
+                // Show tutorial hint for new players
+                setTimeout(() => {
+                    if (!localStorage.getItem('voltaicVoyagePlayed')) {
+                        showTutorial();
+                        localStorage.setItem('voltaicVoyagePlayed', 'true');
+                    }
+                }, 1000);
+            }
+            
+            // Set up auto-save interval
+            setInterval(autoSave, 10000); // Auto-save every 10 seconds
+        });
+        
+        // Handle page visibility change (pause game when tab is not active)
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && gameStarted && !gameEnded) {
+                // Game is paused when tab is not visible
+                if (timer) {
+                    clearInterval(timer);
+                }
+                showTemporaryMessage('⏸️ Permainan dijeda', 'warning');
+            } else if (!document.hidden && gameStarted && !gameEnded) {
+                // Resume game when tab becomes visible again
+                timer = setInterval(() => {
+                    timeLeft--;
+                    timeElement.textContent = timeLeft;
+                    
+                    const config = levelConfigs[currentLevel];
+                    currentScore = Math.max(0, currentScore - config.scoreDeduction);
+                    scoreElement.textContent = currentScore;
+                    
+                    if (timeLeft <= 0) {
+                        endGame(false);
+                    }
+                }, 1000);
+                showTemporaryMessage('▶️ Permainan dilanjutkan', 'success');
+            }
+        });
+        
+        // Prevent accidental page reload during gameplay
+        window.addEventListener('beforeunload', (e) => {
+            if (gameStarted && !gameEnded) {
+                const message = 'Permainan sedang berlangsung. Yakin ingin keluar?';
+                e.preventDefault();
+                e.returnValue = message;
+                return message;
+            }
+        });
+        
+        // Mobile touch support improvements
+        if ('ontouchstart' in window) {
+            // Add touch-friendly styling for mobile devices
+            document.body.style.touchAction = 'manipulation';
+            
+            // Prevent zoom on double tap
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', (e) => {
+                const now = new Date().getTime();
+                if (now - lastTouchEnd <= 300) {
+                    e.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+        }
+    </script>
+</body>
+</html>
